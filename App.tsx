@@ -6,57 +6,101 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
+  FlatList,
+  Image,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
-  useColorScheme,
+  TouchableOpacity,
   View,
+  useColorScheme,
 } from 'react-native';
+import {Input, InputInput} from '@gluestack-ui/react';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const styles = StyleSheet.create({
+  itemContainer: {
+    aspectRatio: 1,
+    flex: 0.5,
+  },
+  itemWrapper: {
+    flex: 1,
+    marginHorizontal: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    borderRadius: 8,
+  },
+  itemImage: {
+    width: '100%',
+    aspectRatio: 2,
+  },
+  detailWrapper: {
+    padding: 8,
+    justifyContent: 'space-between',
+    height: '50%',
+  },
+  title: {
+    fontWeight: '700',
+  },
+  itemType: {
+    marginTop: 8,
+  },
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+});
 
-const SearchHeader: React.FC = () => {
+type ItemTileProps = {
+  item: {title: string; imageSrc?: string};
+  onItemTap: () => void;
+};
+
+const ItemTile = ({item, onItemTap}: ItemTileProps) => {
+  const {imageSrc, title} = item;
+
   return (
-    <View style={{borderStyle: 'solid'}}>
-      <TextInput accessibilityLabel={'test'} />
+    <View
+      style={{
+        aspectRatio: 1,
+        flex: 0.5,
+      }}>
+      <TouchableOpacity style={styles.itemWrapper} onPress={onItemTap}>
+        <Image
+          style={{
+            width: 50,
+            height: 50,
+          }}
+          source={{
+            uri: 'https://reactnative.dev/img/tiny_logo.png',
+          }}
+        />
+        {/* <Image imageSrc={imageSrc} style={styles.itemImage} /> */}
+        <View style={styles.detailWrapper}>
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
+
+const DATA = [
+  {
+    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+    title: 'First Item',
+  },
+  {
+    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+    title: 'Second Item',
+  },
+  {
+    id: '58694a0f-3da1-471f-bd96-145571e29d72',
+    title: 'Third Item',
+  },
+];
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -65,48 +109,43 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const [value, setValue] = React.useState('');
+
+  const handleChange = (text: React.SetStateAction<string>) => setValue(text);
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <SearchHeader />
-        {/* <Header /> */}
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-        </View>
-      </ScrollView>
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <Input>
+              <InputInput
+                placeholder="Search..."
+                value={value}
+                onChangeText={handleChange}
+              />
+            </Input>
+          </>
+        }
+        data={DATA}
+        renderItem={({item}) => {
+          return (
+            <ItemTile
+              item={{title: item.title}}
+              onItemTap={function (): void {
+                console.log('tap on the item');
+              }}
+            />
+          );
+        }}
+        keyExtractor={item => item.id}
+      />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
