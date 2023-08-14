@@ -1,4 +1,6 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Build on top of React Native sample, Image search with Flicker
+
+Please Open src/App.tsx file and add you flickr api key
 
 # Getting Started
 
