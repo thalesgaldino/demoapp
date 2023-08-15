@@ -1,4 +1,4 @@
-# Image Search using Flicker API
+# Image Search using Flickr API
 
 Built on top of latest React Native sample(Vanilla version)
 
@@ -8,7 +8,7 @@ Built on top of latest React Native sample(Vanilla version)
 
 > Install `yarn` as the dependencies were installed with it. Xcode version was 14.3.1
 
-> Open `src/SearchContainer.tsx` file and add you flickr api key
+> Open `src/App.tsx` file and add you flickr api key
 
 ## Install dependencies and run pods
 
