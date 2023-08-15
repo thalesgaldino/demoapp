@@ -37,24 +37,22 @@ type SearchResults = {
   pages: number;
 };
 
-type SearchDataType = {
+export type SearchDataType = {
   query: string;
   page: number;
 };
 
-type FetchParamType = {
+export type FetchParamType = {
   method: string;
   searchData: SearchDataType;
 };
 
 /**
- * goFetch
- * This function fetches the flickr url according to its chosen method
  *
- * @param fetchParam: FetchParamType
- * @returns Promise with object wrapping search results json
+ * @param fetchParam Function to build the url parameters
+ * @returns
  */
-const goFetch = (fetchParam: FetchParamType) => {
+export const getURLWithParams = (fetchParam: FetchParamType) => {
   const {searchData, method} = fetchParam;
   let params = new URLSearchParams();
   params.append('api_key', API_KEY);
@@ -64,7 +62,18 @@ const goFetch = (fetchParam: FetchParamType) => {
   params.append('format', 'json');
   params.append('nojsoncallback', '1');
   params.append('per_page', '20');
-  return fetch('https://api.flickr.com/services/rest?' + params);
+  return 'https://api.flickr.com/services/rest?' + params;
+};
+
+/**
+ * goFetch
+ * This function fetches the flickr url according to its chosen method
+ *
+ * @param fetchParam: FetchParamType
+ * @returns Promise with object wrapping search results json
+ */
+export const goFetch = (fetchParam: FetchParamType) => {
+  return fetch(getURLWithParams(fetchParam));
 };
 
 /**
@@ -73,7 +82,7 @@ const goFetch = (fetchParam: FetchParamType) => {
  * @param searchData: SearchDataType
  * @returns promisse with SearchResults
  */
-const getPhotosSearch = (searchData: SearchDataType) => {
+export const getPhotosSearch = (searchData: SearchDataType) => {
   return goFetch({
     method: 'flickr.photos.search',
     searchData,
@@ -83,11 +92,13 @@ const getPhotosSearch = (searchData: SearchDataType) => {
     })
     .then(res => {
       console.log('this is the result: ', res);
-      return {
-        items: res.photos?.photo,
-        total: res.photos?.total,
-        pages: res.photos?.pages,
-      };
+      if (res.photos)
+        return {
+          items: res.photos.photo,
+          total: res.photos.total,
+          pages: res.photos.pages,
+        };
+      return {};
     })
     .catch(error => console.log('error: ', error));
 };
