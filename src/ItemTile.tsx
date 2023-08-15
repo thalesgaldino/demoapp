@@ -24,11 +24,7 @@ const ItemTile = ({item, onItemTap}: ItemTileProps) => {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <View
-      style={{
-        aspectRatio: 1,
-        flex: 0.5,
-      }}>
+    <View style={styles.itemContainer}>
       <TouchableOpacity style={styles.itemWrapper} onPress={onItemTap}>
         <Image
           style={styles.itemImage}
@@ -47,6 +43,10 @@ const ItemTile = ({item, onItemTap}: ItemTileProps) => {
 };
 
 const styles = StyleSheet.create({
+  itemContainer: {
+    aspectRatio: 1,
+    flex: 0.5,
+  },
   itemWrapper: {
     flex: 1,
     marginHorizontal: 8,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     height: '50%',
   },
-  title: (isDarkMode) => ({
+  title: isDarkMode => ({
     fontWeight: '700',
     color: isDarkMode ? 'white' : 'black',
   }),

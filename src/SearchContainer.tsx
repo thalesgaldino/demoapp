@@ -8,32 +8,26 @@ import {
   FlatList,
   SafeAreaView,
   StatusBar,
-  Text,
   View,
   useColorScheme,
   StyleSheet,
 } from 'react-native';
-import {
-  Input,
-  InputInput,
-  Spinner,
-  Button,
-  ButtonText,
-} from '@gluestack-ui/react';
+import {Spinner} from '@gluestack-ui/react';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import EmptyResults from './EmptyResults';
 import ItemTile from './ItemTile';
 import {API_ENDPOINT, API_KEY} from './App';
+import SearchHeader from './SearchHeader';
 
 //types
-type SearchItem = {
+export type SearchItem = {
   url: string;
   title: string;
   id: string;
 };
 
-type SearchResults = {
+export type SearchResults = {
   items: SearchItem[];
   total: number;
   pages: number;
@@ -73,8 +67,8 @@ export const getURLWithParams = (fetchParam: FetchParamType) => {
  * @param searchData: SearchDataType
  * @returns promisse with SearchResults
  */
-export const getPhotosSearch = (searchData: SearchDataType) =>
-  fetch(
+export const getPhotosSearch = (searchData: SearchDataType) => {
+  return fetch(
     getURLWithParams({
       method: 'flickr.photos.search',
       searchData,
@@ -98,6 +92,30 @@ export const getPhotosSearch = (searchData: SearchDataType) =>
       return {};
     })
     .catch(error => console.log('error: ', error));
+};
+
+export type MergeItemsFunctionParam = {
+  previousSearchResultsItems: SearchItem[] | undefined;
+  newItems: SearchItem[];
+};
+
+/**
+ * This function is to ammend the list with next results items
+ * @param param0 object with previous SearchResults Items and new Items
+ * @returns
+ */
+export const mergeItems = ({
+  previousSearchResultsItems,
+  newItems,
+}: MergeItemsFunctionParam) => {
+  const itemsWithUrl: SearchItem[] = newItems.map((photo: SearchItem) => ({
+    ...photo,
+    url: `https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`,
+  }));
+  return previousSearchResultsItems
+    ? [...previousSearchResultsItems, ...itemsWithUrl]
+    : itemsWithUrl;
+};
 
 /**
  * This component shows a search view with search results
@@ -118,30 +136,49 @@ const SearchContainer = () => {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const addUrlToResults = ({items, total, pages}: SearchResults) => {
-    let itemsWithUrl: SearchItem[] = [];
-    if (items && items.length) {
-      itemsWithUrl = items.map((photo: SearchItem) => ({
-        ...photo,
-        url: `https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`,
-      }));
-      const newSearchResultsItems = searchResults
-        ? [...searchResults.items, ...itemsWithUrl]
-        : itemsWithUrl;
-      setSearchResults({items: newSearchResultsItems, total, pages});
-    }
-    setIsLoading(false);
-  };
+  const processResults =
+    (previousSearchResultsItems: SearchItem[] | undefined) =>
+    ({items, total, pages}: SearchResults) => {
+      if (items && items.length) {
+        const newSearchResultsItems = mergeItems({
+          newItems: items,
+          previousSearchResultsItems,
+        });
+        setSearchResults({items: newSearchResultsItems, total, pages});
+      }
+      setIsLoading(false);
+    };
 
   const searchInit = (searchData: SearchDataType) => {
     console.log('starting search for: ', searchData.query);
-    getPhotosSearch(searchData).then(addUrlToResults);
+    getPhotosSearch(searchData).then(processResults(searchResults?.items));
   };
 
   useEffect(() => {
     console.log('running effect2 for page: ', searchData.page);
     searchInit(searchData);
   }, [searchData]);
+
+  const onEndReached = () => {
+    const isLastPage = searchResults?.pages === searchData.page;
+    const noResults = searchResults?.total === 0;
+    if (
+      searchData &&
+      searchData.page >= 1 &&
+      !isLoading &&
+      !isLastPage &&
+      !noResults
+    ) {
+      const nextPageIndex = searchData.page + 1;
+      setIsLoading(true);
+      setSearchData({...searchData, page: nextPageIndex});
+    }
+  };
+
+  const onHistoryPressed = () => {
+    setSearchResults({items: [], total: 0});
+    setSearchData({query: '', page: 1});
+  };
 
   return (
     <SafeAreaView style={{...backgroundStyle, flex: 1}}>
@@ -151,55 +188,15 @@ const SearchContainer = () => {
       />
       <FlatList
         ListHeaderComponent={
-          <View style={{margin: 8}}>
-            <Input>
-              <InputInput
-                placeholder="Search..."
-                placeholderTextColor={'grey'}
-                color={isDarkMode ? 'white' : 'black'}
-                returnKeyType={'search'}
-                onSubmitEditing={param => {
-                  const {text} = param?.nativeEvent;
-                  // reseting results so there's no risk of "cache" - temporary solution
-                  setSearchResults({items: [], total: 0});
-                  if (text !== '') {
-                    if (searchHistory.some(element => element === text)) {
-                      console.log('already added to history!');
-                    } else {
-                      setSearchHistory([...searchHistory, text]);
-                    }
-                    setSearchData({query: text, page: 1});
-                    setIsLoading(true);
-                  }
-                }}
-              />
-            </Input>
-            {searchResults?.total >= 0 && (
-              <View
-                style={[
-                  styles.wrapper,
-                  {flexDirection: 'row', justifyContent: 'space-between'},
-                ]}>
-                <Text
-                  style={[
-                    styles.textColor(isDarkMode),
-                    styles.textFormat,
-                  ]}>{`Total: ${searchResults?.total}`}</Text>
-                <Button
-                  size="sm"
-                  variant="solid"
-                  action="primary"
-                  isDisabled={searchHistory.length === 0}
-                  onPress={() => {
-                    setSearchResults({items: [], total: 0});
-                    setSearchData({query: '', page: 1});
-                  }}
-                  isFocusVisible={false}>
-                  <ButtonText>History</ButtonText>
-                </Button>
-              </View>
-            )}
-          </View>
+          <SearchHeader
+            searchResults={searchResults}
+            setSearchResults={setSearchResults}
+            searchHistory={searchHistory}
+            setSearchHistory={setSearchHistory}
+            setSearchData={setSearchData}
+            setIsLoading={setIsLoading}
+            onHistoryPressed={onHistoryPressed}
+          />
         }
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -210,21 +207,7 @@ const SearchContainer = () => {
         renderItem={({item}: {item: any}) => {
           return <ItemTile item={{title: item.title, url: item.url}} />;
         }}
-        onEndReached={() => {
-          const isLastPage = searchResults?.pages === searchData.page;
-          const noResults = searchResults?.total === 0;
-          if (
-            searchData &&
-            searchData.page >= 1 &&
-            !isLoading &&
-            !isLastPage &&
-            !noResults
-          ) {
-            const nextPageIndex = searchData.page + 1;
-            setIsLoading(true);
-            setSearchData({...searchData, page: nextPageIndex});
-          }
-        }}
+        onEndReached={onEndReached}
         keyExtractor={item => item.id}
         ListFooterComponent={
           isLoading ? (
