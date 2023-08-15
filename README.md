@@ -76,9 +76,9 @@ If you can't get this to work, see the [Troubleshooting](https://reactnative.dev
 
 # Used versions
 
-Xcode 14.3.1
-node 19.7.0
-yarn 1.22.19
-pod 1.12.1
-javac 14.0.2
-react-native 0.72.3
+- Xcode 14.3.1
+- node 19.7.0
+- yarn 1.22.19
+- pod 1.12.1
+- javac 14.0.2
+- react-native 0.72.3
