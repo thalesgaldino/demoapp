@@ -78,7 +78,6 @@ export const getPhotosSearch = (searchData: SearchDataType) => {
       return r.json();
     })
     .then(res => {
-      console.log('this is the result: ', res);
       if (res.photos)
         return {
           items: res.photos.photo,
@@ -150,12 +149,10 @@ const SearchContainer = () => {
     };
 
   const searchInit = (searchData: SearchDataType) => {
-    console.log('starting search for: ', searchData.query);
     getPhotosSearch(searchData).then(processResults(searchResults?.items));
   };
 
   useEffect(() => {
-    console.log('running effect2 for page: ', searchData.page);
     searchInit(searchData);
   }, [searchData]);
 
