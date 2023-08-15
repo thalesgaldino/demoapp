@@ -11,13 +11,15 @@ import {
   Text,
   View,
   useColorScheme,
+  StyleSheet,
 } from 'react-native';
-import {Input, InputInput} from '@gluestack-ui/react';
+import {Input, InputInput, Spinner, Button, ButtonText} from '@gluestack-ui/react';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import EmptyResults from './EmptyResults';
 import ItemTile from './ItemTile';
 
+//TODO: fetch this from the build environment
 // const API_KEY = '<ADD-KEY_HERE>';
 const API_KEY = '11c40ef31e4961acf4f98c8ff4e945d7';
 
@@ -116,12 +118,6 @@ const SearchContainer = () => {
         ...photo,
         url: `https://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`,
       }));
-      // console.warn(
-      //   'these are the old items searchResults.items: ',
-      //   searchResults?.items,
-      // );
-      // console.warn('these are the itemsWithUrl: ', itemsWithUrl);
-      // debugger;
       const newSearchResultsItems = searchResults
         ? [...searchResults.items, ...itemsWithUrl]
         : itemsWithUrl;
@@ -140,7 +136,6 @@ const SearchContainer = () => {
     searchInit(searchData);
   }, [searchData]);
 
-  // console.log('this is the searchResults?.items: ', searchResults?.items);
   return (
     <SafeAreaView style={{...backgroundStyle, flex: 1}}>
       <StatusBar
@@ -157,12 +152,15 @@ const SearchContainer = () => {
                 color={isDarkMode ? 'white' : 'black'}
                 returnKeyType={'search'}
                 onSubmitEditing={param => {
-                  // console.warn('onSubmitEditing called param: ', param.nativeEvent.text);
                   const {text} = param?.nativeEvent;
-                  //reset results so there's no risk of "cache" - temporary solution
+                  // reseting results so there's no risk of "cache" - temporary solution
                   setSearchResults({items: [], total: 0});
                   if (text !== '') {
-                    setSearchHistory([...searchHistory, text]);
+                    if ( searchHistory.some((element) => element === text) ){
+                        console.log('already added to history!');
+                    }else {
+                     setSearchHistory([...searchHistory, text]);   
+                    }
                     setSearchData({query: text, page: 1});
                     setIsLoading(true);
                   }
@@ -170,11 +168,21 @@ const SearchContainer = () => {
               />
             </Input>
             {searchResults?.total >= 0 && (
-              <Text
-                style={{
-                  color: isDarkMode ? 'white' : 'black',
-                  marginVertical: 16,
-                }}>{`Total: ${searchResults?.total}`}</Text>
+              <View style={[styles.wrapper, {flexDirection: 'row', justifyContent: 'space-between'}]}>
+                <Text style={[styles.textColor(isDarkMode), styles.textFormat]}>{`Total: ${searchResults?.total}`}</Text>
+                <Button
+                    size="sm"
+                    variant="solid"
+                    action="primary"
+                    isDisabled={searchHistory.length === 0}
+                    onPress={() => {
+                        setSearchResults({items: [], total: 0});
+                        setSearchData({query: '', page: 1});
+                    }}
+                    isFocusVisible={false}>
+                        <ButtonText>History</ButtonText>
+                </Button>
+              </View>
             )}
           </View>
         }
@@ -188,17 +196,13 @@ const SearchContainer = () => {
           return (
             <ItemTile
               item={{title: item.title, url: item.url}}
-              onItemTap={function (): void {
-                console.log('tap on the item');
-              }}
             />
           );
         }}
         onEndReached={() => {
-          console.log('onEndReached called! searchData: ', searchData);
-          //TODO: to test
           const isLastPage = searchResults?.pages === searchData.page;
-          if (searchData && searchData.page >= 1 && !isLoading && !isLastPage) {
+          const noResults = searchResults?.total === 0;
+          if (searchData && searchData.page >= 1 && !isLoading && !isLastPage && !noResults) {
             const nextPageIndex = searchData.page + 1;
             setIsLoading(true);
             setSearchData({...searchData, page: nextPageIndex});
@@ -207,10 +211,8 @@ const SearchContainer = () => {
         keyExtractor={item => item.id}
         ListFooterComponent={
           isLoading ? (
-            <View>
-              <Text style={{color: isDarkMode ? 'white' : 'black'}}>
-                {'Loading...'}
-              </Text>
+            <View style={styles.wrapper}>
+              <Spinner accessibilityLabel="Loading items"/>
             </View>
           ) : null
         }
@@ -226,5 +228,11 @@ const SearchContainer = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+    textColor: (isDarkMode) =>  ({color: isDarkMode ? 'white' : 'black'}),
+    textFormat: {fontSize: 18},
+    wrapper: {marginVertical: 16}
+});
 
 export default SearchContainer;

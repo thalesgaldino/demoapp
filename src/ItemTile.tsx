@@ -31,15 +31,11 @@ const ItemTile = ({item, onItemTap}: ItemTileProps) => {
       }}>
       <TouchableOpacity style={styles.itemWrapper} onPress={onItemTap}>
         <Image
-          style={{
-            width: "100%",
-            aspectRatio: 2,
-          }}
+          style={styles.itemImage}
           source={{
             uri: url,
           }}
         />
-        {/* <Image imageSrc={imageSrc} style={styles.itemImage} /> */}
         <View style={styles.detailWrapper}>
           <Text style={styles.title(isDarkMode)} numberOfLines={2}>
             {title}
@@ -51,10 +47,6 @@ const ItemTile = ({item, onItemTap}: ItemTileProps) => {
 };
 
 const styles = StyleSheet.create({
-  itemContainer: {
-    aspectRatio: 1,
-    flex: 0.5,
-  },
   itemWrapper: {
     flex: 1,
     marginHorizontal: 8,
@@ -65,7 +57,7 @@ const styles = StyleSheet.create({
   },
   itemImage: {
     width: '100%',
-    aspectRatio: 2,
+    aspectRatio: 1.5,
   },
   detailWrapper: {
     padding: 8,
@@ -76,9 +68,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: isDarkMode ? 'white' : 'black',
   }),
-  itemType: {
-    marginTop: 8,
-  },
 });
 
 export default ItemTile;

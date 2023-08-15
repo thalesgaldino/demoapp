@@ -1,5 +1,6 @@
 import React from 'react';
-import {View, Text, useColorScheme} from 'react-native';
+import {View, Text, useColorScheme, StyleSheet} from 'react-native';
+import {VStack, Divider} from '@gluestack-ui/react';
 
 type EmptyResultsProps = {
   searchResults: any;
@@ -24,34 +25,48 @@ const EmptyResults = (props: EmptyResultsProps) => {
   if (searchResults === undefined || searchResults?.items?.length === 0) {
     return (
       <View>
-        <Text style={{color: isDarkMode ? 'white' : 'black', margin: 16}}>
-          {'No items returned, please enter new query'}
-        </Text>
+        <View style={styles.wrapper}>
+            <Text style={styles.textColor(isDarkMode)}>
+                {'No items returned. Please enter new query.'}
+            </Text>
+        </View>
         {searchHistory && searchHistory.length > 0 ? (
           <View>
-            <Text
-              style={{
-                color: isDarkMode ? 'white' : 'black',
-                margin: 16,
-              }}>{`search history: ${searchHistory.length}`}</Text>
-            <>
-              {searchHistory.map((item:string) => {
-                return <Text>{item}</Text>;
+            <View style={styles.wrapper}>
+            <Text style={styles.textColor(isDarkMode)}>{`Search history:`}</Text>
+            </View>
+            <VStack w={'100%'} justifyContent="center" alignItems="center">
+              <DividerWrap />
+              {searchHistory.map((item:string, index) => {
+                return (<View key={`item_${index}`}>
+                                <View style={styles.wrapper}>
+                                    <Text onPress={() => console.warn(`to redirect to ${item}`)}>{item}</Text>
+                                    <DividerWrap />{/*somehow a key in the immediate parent of this makes it hidden*/}
+                                </View>
+                            </View>);
               })}
-            </>
+            </VStack>
           </View>
         ) : (
-          <View>
-            <Text
-              style={{
-                color: isDarkMode ? 'white' : 'black',
-                margin: 16,
-              }}>{`No search history`}</Text>
+          <View style={styles.wrapper}>
+            <Text style={styles.textColor(isDarkMode)}>{`No search history.`}</Text>
           </View>
         )}
       </View>
     );
   }
 };
+
+const DividerWrap = () => (<Divider
+                style={{marginTop: 16}}
+                w={'100%'}
+                variant="horizontal"
+                
+            />);
+
+const styles = StyleSheet.create({
+    textColor: (isDarkMode) =>  ({color: isDarkMode ? 'white' : 'black'}),
+    wrapper: {marginTop: 16, marginHorizontal: 16}
+});
 
 export default EmptyResults;

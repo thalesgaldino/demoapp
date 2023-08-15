@@ -1,22 +1,29 @@
-# Build on top of React Native sample, Image search with Flicker
+# Image Search using Flicker API
+Built on top of React Native sample(Vanilla version)
 
-Please Open src/App.tsx file and add you flickr api key
-
-# Getting Started
+# Set up requirements
 
 >**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
 
-## Step 1: Start the Metro Server
+> Install `yarn` as the dependencies were installed with it. Xcode version was 14.3.1
+
+> Open `src/SearchContainer.tsx` file and add you flickr api key
+
+## Install dependencies and run pods
+
+```bash
+yarn install
+
+cd ios && pod install
+```
+
+## Prepare to run: Start the Metro Server
 
 First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
 
 To start Metro, run the following command from the _root_ of your React Native project:
 
 ```bash
-# using npm
-npm start
-
-# OR using Yarn
 yarn start
 ```
 
@@ -27,20 +34,12 @@ Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _roo
 ### For Android
 
 ```bash
-# using npm
-npm run android
-
-# OR using Yarn
 yarn android
 ```
 
 ### For iOS
 
 ```bash
-# using npm
-npm run ios
-
-# OR using Yarn
 yarn ios
 ```
 
@@ -48,34 +47,23 @@ If everything is set up _correctly_, you should see your new app running in your
 
 This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
 
-## Step 3: Modifying your App
+## Known issues
 
-Now that you have successfully run the app, let's modify it.
+1. SearchContainer render test fails because we run into an issue with `@gluestack-ui` lib
+2. Icons are not working with `gluestack-ui` lib, open issue here: https://github.com/software-mansion/react-native-svg/issues/2101
+3. The search result list doesn't ensure merge of a list of unique items because when loading the next page, there's no check on whether the item has moved between pages and therefore an item might come in 2 pages, even after merge. This can affect the recycling of the list which would have caching issues. One work around would be replacing the array with a hashmap
+4. Api key should be in a environment file, so we don't store it on the repo by mistake
+5. Fail case UX should be handled better, right now is silent in terms of user interface
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+## Suggestions for next Immediate Improvements
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+1. Strings could be using i18n
+2. There's no assurance the images sizes are appropriated
+3. Increase test coverage
 
 # Troubleshooting
 
+1. If you come across `xcrun error: SDK "iphoneos" cannot be located` while installing pod, fix it running: `sudo xcode-select --switch /Applications/Xcode.app`
+2. in case you have issues with dependencies caching, try `yarn clear:all`
+
 If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
