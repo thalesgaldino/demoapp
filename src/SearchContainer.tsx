@@ -13,18 +13,20 @@ import {
   useColorScheme,
   StyleSheet,
 } from 'react-native';
-import {Input, InputInput, Spinner, Button, ButtonText} from '@gluestack-ui/react';
+import {
+  Input,
+  InputInput,
+  Spinner,
+  Button,
+  ButtonText,
+} from '@gluestack-ui/react';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import EmptyResults from './EmptyResults';
 import ItemTile from './ItemTile';
+import {API_ENDPOINT, API_KEY} from './App';
 
-//TODO: fetch this from the build environment
-// const API_KEY = '<ADD-KEY_HERE>';
-const API_KEY = '11c40ef31e4961acf4f98c8ff4e945d7';
-
-// types
-
+//types
 type SearchItem = {
   url: string;
   title: string;
@@ -62,18 +64,7 @@ export const getURLWithParams = (fetchParam: FetchParamType) => {
   params.append('format', 'json');
   params.append('nojsoncallback', '1');
   params.append('per_page', '20');
-  return 'https://api.flickr.com/services/rest?' + params;
-};
-
-/**
- * goFetch
- * This function fetches the flickr url according to its chosen method
- *
- * @param fetchParam: FetchParamType
- * @returns Promise with object wrapping search results json
- */
-export const goFetch = (fetchParam: FetchParamType) => {
-  return fetch(getURLWithParams(fetchParam));
+  return `${API_ENDPOINT}?${params}`;
 };
 
 /**
@@ -82,11 +73,13 @@ export const goFetch = (fetchParam: FetchParamType) => {
  * @param searchData: SearchDataType
  * @returns promisse with SearchResults
  */
-export const getPhotosSearch = (searchData: SearchDataType) => {
-  return goFetch({
-    method: 'flickr.photos.search',
-    searchData,
-  })
+export const getPhotosSearch = (searchData: SearchDataType) =>
+  fetch(
+    getURLWithParams({
+      method: 'flickr.photos.search',
+      searchData,
+    }),
+  )
     .then(r => {
       return r.json();
     })
@@ -98,10 +91,13 @@ export const getPhotosSearch = (searchData: SearchDataType) => {
           total: res.photos.total,
           pages: res.photos.pages,
         };
+      if (res?.stat === 'fail') {
+        // TODO: implement UX
+        // console.warn('api call failure');
+      }
       return {};
     })
     .catch(error => console.log('error: ', error));
-};
 
 /**
  * This component shows a search view with search results
@@ -167,10 +163,10 @@ const SearchContainer = () => {
                   // reseting results so there's no risk of "cache" - temporary solution
                   setSearchResults({items: [], total: 0});
                   if (text !== '') {
-                    if ( searchHistory.some((element) => element === text) ){
-                        console.log('already added to history!');
-                    }else {
-                     setSearchHistory([...searchHistory, text]);   
+                    if (searchHistory.some(element => element === text)) {
+                      console.log('already added to history!');
+                    } else {
+                      setSearchHistory([...searchHistory, text]);
                     }
                     setSearchData({query: text, page: 1});
                     setIsLoading(true);
@@ -179,19 +175,27 @@ const SearchContainer = () => {
               />
             </Input>
             {searchResults?.total >= 0 && (
-              <View style={[styles.wrapper, {flexDirection: 'row', justifyContent: 'space-between'}]}>
-                <Text style={[styles.textColor(isDarkMode), styles.textFormat]}>{`Total: ${searchResults?.total}`}</Text>
+              <View
+                style={[
+                  styles.wrapper,
+                  {flexDirection: 'row', justifyContent: 'space-between'},
+                ]}>
+                <Text
+                  style={[
+                    styles.textColor(isDarkMode),
+                    styles.textFormat,
+                  ]}>{`Total: ${searchResults?.total}`}</Text>
                 <Button
-                    size="sm"
-                    variant="solid"
-                    action="primary"
-                    isDisabled={searchHistory.length === 0}
-                    onPress={() => {
-                        setSearchResults({items: [], total: 0});
-                        setSearchData({query: '', page: 1});
-                    }}
-                    isFocusVisible={false}>
-                        <ButtonText>History</ButtonText>
+                  size="sm"
+                  variant="solid"
+                  action="primary"
+                  isDisabled={searchHistory.length === 0}
+                  onPress={() => {
+                    setSearchResults({items: [], total: 0});
+                    setSearchData({query: '', page: 1});
+                  }}
+                  isFocusVisible={false}>
+                  <ButtonText>History</ButtonText>
                 </Button>
               </View>
             )}
@@ -204,16 +208,18 @@ const SearchContainer = () => {
         numColumns={2}
         data={searchResults?.items}
         renderItem={({item}: {item: any}) => {
-          return (
-            <ItemTile
-              item={{title: item.title, url: item.url}}
-            />
-          );
+          return <ItemTile item={{title: item.title, url: item.url}} />;
         }}
         onEndReached={() => {
           const isLastPage = searchResults?.pages === searchData.page;
           const noResults = searchResults?.total === 0;
-          if (searchData && searchData.page >= 1 && !isLoading && !isLastPage && !noResults) {
+          if (
+            searchData &&
+            searchData.page >= 1 &&
+            !isLoading &&
+            !isLastPage &&
+            !noResults
+          ) {
             const nextPageIndex = searchData.page + 1;
             setIsLoading(true);
             setSearchData({...searchData, page: nextPageIndex});
@@ -223,7 +229,7 @@ const SearchContainer = () => {
         ListFooterComponent={
           isLoading ? (
             <View style={styles.wrapper}>
-              <Spinner accessibilityLabel="Loading items"/>
+              <Spinner accessibilityLabel="Loading items" />
             </View>
           ) : null
         }
@@ -241,9 +247,9 @@ const SearchContainer = () => {
 };
 
 const styles = StyleSheet.create({
-    textColor: (isDarkMode) =>  ({color: isDarkMode ? 'white' : 'black'}),
-    textFormat: {fontSize: 18},
-    wrapper: {marginVertical: 16}
+  textColor: isDarkMode => ({color: isDarkMode ? 'white' : 'black'}),
+  textFormat: {fontSize: 18},
+  wrapper: {marginVertical: 16},
 });
 
 export default SearchContainer;

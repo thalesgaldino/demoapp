@@ -1,3 +1,4 @@
+import {API_ENDPOINT, API_KEY} from '../App';
 import {
   FetchParamType,
   SearchDataType,
@@ -9,16 +10,18 @@ import {
 import {it} from '@jest/globals';
 
 it('should return parameters', () => {
+  const api_key = API_KEY;
+  const method = 'flickr.photos.search';
   const searchData: SearchDataType = {
     query: '',
     page: 1,
   };
   const fetchParam: FetchParamType = {
-    method: 'flickr.photos.search',
+    method,
     searchData,
   };
   expect(getURLWithParams(fetchParam)).toBe(
-    'https://api.flickr.com/services/rest?api_key=11c40ef31e4961acf4f98c8ff4e945d7&method=flickr.photos.search&text=&page=1&format=json&nojsoncallback=1&per_page=20',
+    `${API_ENDPOINT}?api_key=${api_key}&method=${method}&text=&page=1&format=json&nojsoncallback=1&per_page=20`,
   );
 });
 
