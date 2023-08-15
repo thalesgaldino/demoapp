@@ -67,30 +67,29 @@ export const getURLWithParams = (fetchParam: FetchParamType) => {
  * @param searchData: SearchDataType
  * @returns promisse with SearchResults
  */
-export const getPhotosSearch = (searchData: SearchDataType) => {
-  return fetch(
-    getURLWithParams({
-      method: 'flickr.photos.search',
-      searchData,
-    }),
-  )
-    .then(r => {
-      return r.json();
-    })
-    .then(res => {
-      if (res.photos)
-        return {
-          items: res.photos.photo,
-          total: res.photos.total,
-          pages: res.photos.pages,
-        };
-      if (res?.stat === 'fail') {
-        // TODO: implement UX
-        // console.warn('api call failure');
-      }
-      return {};
-    })
-    .catch(error => console.log('error: ', error));
+export const getPhotosSearch = async (searchData: SearchDataType) => {
+  try {
+    const resJson = await fetch(
+      getURLWithParams({
+        method: 'flickr.photos.search',
+        searchData,
+      }),
+    );
+    const data = await resJson.json();
+    if (data.photos)
+      return {
+        items: data.photos.photo,
+        total: data.photos.total,
+        pages: data.photos.pages,
+      };
+    if (data?.stat === 'fail') {
+      // TODO: implement UX
+      // console.warn('api call failure');
+    }
+    return {};
+  } catch (e) {
+    return undefined;
+  }
 };
 
 export type MergeItemsFunctionParam = {

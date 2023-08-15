@@ -1,6 +1,6 @@
 # Image Search using Flicker API
 
-Built on top of React Native sample(Vanilla version)
+Built on top of latest React Native sample(Vanilla version)
 
 # Set up requirements
 
@@ -63,7 +63,7 @@ This is one way to run your app — you can also run it directly from within And
 1. History could be in a autosuggestion view as the user types in the input. Tap on a item should search again
 2. Persist history with redux persist?
 3. Strings could be using i18n
-4. There's no assurance the images sizes are appropriated
+4. There's no assurance the images sizes are appropriate
 5. Increase test coverage
 6. Pull to refresh
 
